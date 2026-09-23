@@ -199,7 +199,7 @@ export default async function HomePage() {
               <div className="chain-row__num">{idx + 1}</div>
               <div style={{ flex: 1 }}>
                 <div className="chain-row__word">{w.word}</div>
-                <div className="chain-row__name">{w.user?.display_name ?? w.user?.first_name}</div>
+                <div className="chain-row__name">{w.user?.display_name ?? w.user?.first_name ?? 'Former player'}</div>
               </div>
             </div>
           ))}

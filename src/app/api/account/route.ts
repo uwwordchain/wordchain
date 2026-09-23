@@ -10,10 +10,14 @@ export async function DELETE() {
 
   const admin = await createAdminClient()
 
-  // Remove public profile first (FK), then auth record
-  await admin.from('users').delete().eq('id', user.id)
+  // Remove public profile first (FKs null out via ON DELETE SET NULL), then auth
+  const { error: profileErr } = await admin.from('users').delete().eq('id', user.id)
+  if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 })
+
   const { error } = await admin.auth.admin.deleteUser(user.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error && !/not.?found/i.test(error.message)) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   return NextResponse.json({ success: true })
 }

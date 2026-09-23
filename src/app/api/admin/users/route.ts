@@ -53,10 +53,16 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'You cannot delete your own account here' }, { status: 400 })
   }
 
-  // Delete from public.users first (FK constraints), then auth.users
-  await ctx.admin.from('users').delete().eq('id', userId)
-  const { error } = await ctx.admin.auth.admin.deleteUser(userId)
+  // Delete profile first (FKs null out via ON DELETE SET NULL), then auth.
+  // Both deletes are error-checked — a silent failure here previously left
+  // orphaned rows while reporting success.
+  const { error: profileErr } = await ctx.admin.from('users').delete().eq('id', userId)
+  if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { error: authErr } = await ctx.admin.auth.admin.deleteUser(userId)
+  // "User not found" is fine — profile may exist without an auth record
+  if (authErr && !/not.?found/i.test(authErr.message)) {
+    return NextResponse.json({ error: authErr.message }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }
