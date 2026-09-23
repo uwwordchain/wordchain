@@ -52,6 +52,66 @@ function Toggle({ on, onChange, label, note }: { on: boolean; onChange: (v: bool
   )
 }
 
+/** Searchable user picker — type to filter by name, email, or phone */
+function UserPicker({ users, onPick }: { users: User[]; onPick: (id: string) => void }) {
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState(false)
+
+  const query = q.trim().toLowerCase()
+  const matches = users
+    .filter(u => u.phone)
+    .filter(u => !query ||
+      `${u.display_name ?? ''} ${u.first_name} ${u.email} ${u.phone}`.toLowerCase().includes(query))
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box', fontFamily: 'Space Mono, monospace',
+    fontSize: 'var(--text-xs)', padding: '4px 6px',
+    border: '1px solid var(--border-light)', background: 'var(--white)',
+    outline: 'none', borderRadius: 0,
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={q}
+        placeholder="Type name or phone…"
+        onChange={e => { setQ(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={inputStyle}
+      />
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+          background: 'var(--white)', border: '1px solid var(--border-light)', borderTop: 'none',
+          maxHeight: '10rem', overflowY: 'auto', boxShadow: '0 4px 8px rgba(0,0,0,0.08)',
+        }}>
+          {matches.length === 0 ? (
+            <div style={{ padding: '6px 8px', fontSize: 'var(--text-2xs)', color: 'var(--light)' }}>
+              No players match &ldquo;{q}&rdquo;
+            </div>
+          ) : matches.slice(0, 30).map(u => (
+            <button
+              key={u.id}
+              onMouseDown={e => e.preventDefault()} // keep focus so onClick fires before blur
+              onClick={() => { onPick(u.id); setQ(''); setOpen(false) }}
+              style={{
+                display: 'block', width: '100%', textAlign: 'left',
+                fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-xs)',
+                padding: '6px 8px', background: 'none', border: 'none',
+                borderBottom: '1px solid var(--border-light)', cursor: 'pointer',
+              }}
+            >
+              {u.display_name ?? u.first_name} — {u.phone}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ChainsClient({
   initialStarters, users, activeChains, longestCount, gameDay, today,
   initialAutoLaunch, initialLaunchDays, yesterdayWinner, initialCongratsSent,
@@ -330,14 +390,9 @@ export function ChainsClient({
                           <button onClick={() => setEditSlots(p => ({ ...p, [slot]: '' }))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mid)', fontFamily: 'inherit', fontSize: 14 }}>×</button>
                         </div>
                       ) : (
-                        /* Empty — dropdown to pick */
+                        /* Empty — searchable picker */
                         <div>
-                          <select value="" onChange={e => setEditSlots(p => ({ ...p, [slot]: e.target.value }))} style={S.select}>
-                            <option value="">Search name or phone… ▼</option>
-                            {users.filter(u => u.phone).map(u => (
-                              <option key={u.id} value={u.id}>{u.display_name ?? u.first_name} — {u.phone}</option>
-                            ))}
-                          </select>
+                          <UserPicker users={users} onPick={id => setEditSlots(p => ({ ...p, [slot]: id }))} />
                           <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--mid)', marginTop: 2 }}>Leave blank → random</div>
                         </div>
                       )}
@@ -404,7 +459,7 @@ export function ChainsClient({
             style={{ flex: 1, fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-xs)', padding: 'var(--space-2)', border: '1px solid var(--border-light)', background: 'var(--white)', outline: 'none', borderRadius: 0 }} />
           <button onClick={addDateRow} disabled={!addDate || saving}
             style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-xs)', fontWeight: 700, padding: 'var(--space-2) var(--space-3)', background: 'var(--black)', color: 'var(--white)', border: 'none', cursor: addDate ? 'pointer' : 'not-allowed', opacity: addDate ? 1 : 0.4 }}>
-            + Add days
+            + Add day
           </button>
         </div>
       </div>
