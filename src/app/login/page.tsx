@@ -2,6 +2,7 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { Input } from '@/components/ui/Input'
 import { PinInput } from '@/components/ui/PinInput'
 import { Button } from '@/components/ui/Button'
@@ -18,11 +19,13 @@ function useSupabase() {
 // ── Forgot PIN inline panel ────────────────────────────────────────────────
 function ForgotPin({ onCancel }: { onCancel: () => void }) {
   // Implicit flow: the reset email then works in ANY browser/device (tokens ride
-  // in the URL fragment) instead of requiring the same browser that requested it (PKCE).
-  const supabase = createBrowserClient(
+  // in the URL fragment) instead of requiring the same browser that requested it.
+  // NOTE: must use the base supabase-js client here — @supabase/ssr's
+  // createBrowserClient hard-codes flowType to 'pkce' and ignores this option.
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { flowType: 'implicit' } }
+    { auth: { flowType: 'implicit', persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
   )
   const [email, setEmail]       = useState('')
   const [sent, setSent]         = useState(false)
