@@ -176,7 +176,7 @@ export function MenuOverlay({ isOpen, onClose, isLoggedIn, isAdmin = false }: Me
         </nav>
 
         <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--border-light)' }}>
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--light)' }}>uwwordchain.org</div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--light)' }}>uwwordchain.app</div>
         </div>
       </div>
     </div>

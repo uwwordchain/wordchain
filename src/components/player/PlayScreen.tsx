@@ -118,7 +118,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
   // Opens the native texting app, optionally pre-addressed to a phone number.
   const openSMS = (phone?: string) => {
     const nextLetter = submittedWord.slice(-1).toUpperCase()
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.org'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.app'
     const shareUrl = `${origin}/play/${shareToken}`
     const msg = encodeURIComponent(
       `You're next in the chain! I played ${submittedWord.toUpperCase()}, so your word starts with ${nextLetter}. Keep the chain going: ${shareUrl}`
@@ -134,7 +134,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
   const handleNativeSMS = () => openSMS()
 
   const handleCopy = async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.org'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.app'
     const shareUrl = `${origin}/play/${shareToken}`
     try {
       await navigator.clipboard.writeText(shareUrl)
@@ -197,7 +197,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
 
   if (playState === 'success') {
     const nextLetter = submittedWord.slice(-1).toUpperCase()
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.org'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://uwwordchain.app'
     const shareUrl = `${origin}/play/${shareToken}`
     // In re-share mode the visitor's word is already part of previousWords
     const fullChain = [
@@ -302,7 +302,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
           </Accordion>
         </div>
 
-        <div className="app-footer">uwwordchain.org</div>
+        <div className="app-footer">uwwordchain.app</div>
       </div>
     )
   }
@@ -332,7 +332,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
           </p>
         </div>
 
-        <div className="app-footer">uwwordchain.org</div>
+        <div className="app-footer">uwwordchain.app</div>
       </div>
     )
   }
@@ -389,7 +389,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
         </Button>
       </div>
 
-      <div className="app-footer">uwwordchain.org</div>
+      <div className="app-footer">uwwordchain.app</div>
     </div>
   )
 }

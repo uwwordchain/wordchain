@@ -31,7 +31,7 @@ export async function sendEmail({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      // Until the uwwordchain.org domain is verified in Resend, the default
+      // Until the uwwordchain.app domain is verified in Resend, the default
       // onboarding@resend.dev sender works out of the box (test mode: it can
       // only deliver to the Resend account owner's email address).
       from: process.env.EMAIL_FROM || 'UW WordChain <onboarding@resend.dev>',

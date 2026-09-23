@@ -205,7 +205,7 @@ export default async function HomePage() {
         )}
       </div>
 
-      <div className="app-footer">uwwordchain.org</div>
+      <div className="app-footer">uwwordchain.app</div>
     </div>
   )
 }

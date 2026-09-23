@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: inviteCreateErr.message }, { status: 500 })
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.org'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.app'
     const shareUrl = `${appUrl}/play/${nextToken}`
     const nextLetter = normalized.slice(-1).toUpperCase()
 

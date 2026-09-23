@@ -5,7 +5,7 @@
  *
  * Generated with Vercel OG (satori). Design: red gradient square,
  * "DAILY LEADERBOARD" eyebrow, starting word title, white pill rows,
- * rule + uwwordchain.org footer.
+ * rule + uwwordchain.app footer.
  */
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 'auto', width: '100%' }}>
           <div style={{ display: 'flex', width: '100%', height: 2, background: '#ffffff' }} />
           <div style={{ display: 'flex', color: '#ffffff', fontSize: 28, fontWeight: 400, letterSpacing: 2, marginTop: 24 }}>
-            uwwordchain.org
+            uwwordchain.app
           </div>
         </div>
       </div>

@@ -18,7 +18,7 @@ export interface LaunchResult {
 export async function launchTodaysChains(): Promise<LaunchResult> {
   const admin = await createAdminClient()
   const today = todayCT()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.org'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.app'
 
   // ── Ensure game_day exists ─────────────────────────────────────────
   let gameDay: { id: string; word: string } | null = null

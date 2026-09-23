@@ -58,7 +58,7 @@ export default async function AccountPage() {
         />
       </div>
 
-      <div className="app-footer">uwwordchain.org</div>
+      <div className="app-footer">uwwordchain.app</div>
     </div>
   )
 }

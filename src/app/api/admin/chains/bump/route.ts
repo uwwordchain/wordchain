@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.org'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.app'
   const firstName = lastPlayer?.first_name ?? 'Hey'
 
   const body =
