@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { Topbar } from '@/components/ui/Topbar'
 import { AdBanner } from '@/components/player/AdBanner'
+import { RecoveryRedirect } from '@/components/player/RecoveryRedirect'
 import { todayCT, yesterdayCT } from '@/lib/time'
 import type { GameDay, ChainWord, User } from '@/types'
 
@@ -135,6 +136,7 @@ export default async function HomePage() {
 
   return (
     <div className="screen">
+      <RecoveryRedirect />
       <AdBanner
         active={bannerEnabled}
         imageUrl={bannerAd?.image_url ?? null}

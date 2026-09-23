@@ -25,13 +25,25 @@ function ResetPinForm() {
   )
 
   useEffect(() => {
-    // Supabase appends ?code=... (PKCE flow) after the user clicks the reset link.
-    // Exchange it for a session so we can call updateUser.
+    // Implicit flow: Supabase puts session tokens in the URL fragment.
+    // Works in any browser/device — preferred path.
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    if (accessToken && refreshToken) {
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ error }) => {
+        if (error) { setInvalidDetail(`Details: ${error.message}`); setStep('invalid'); return }
+        setStep('enter-new')
+      })
+      return
+    }
+
+    // PKCE flow: Supabase appends ?code=... after the user clicks the reset link.
+    // Exchange it for a session (only works in the browser that requested the reset).
     const code = searchParams.get('code')
     if (!code) {
       // Supabase reports verify failures (used/expired token) as error params,
       // either in the query string or the URL fragment depending on flow.
-      const hashParams = new URLSearchParams(window.location.hash.slice(1))
       const desc = searchParams.get('error_description') || searchParams.get('error_code')
         || hashParams.get('error_description') || hashParams.get('error_code')
       setInvalidDetail(desc ? `Details: ${desc.replace(/\+/g, ' ')}` : 'Details: no code present in link')

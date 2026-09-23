@@ -17,7 +17,13 @@ function useSupabase() {
 
 // ── Forgot PIN inline panel ────────────────────────────────────────────────
 function ForgotPin({ onCancel }: { onCancel: () => void }) {
-  const supabase = useSupabase()
+  // Implicit flow: the reset email then works in ANY browser/device (tokens ride
+  // in the URL fragment) instead of requiring the same browser that requested it (PKCE).
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { flowType: 'implicit' } }
+  )
   const [email, setEmail]       = useState('')
   const [sent, setSent]         = useState(false)
   const [loading, setLoading]   = useState(false)
