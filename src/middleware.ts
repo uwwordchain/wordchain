@@ -2,6 +2,16 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Safety net for PIN-reset emails: Supabase appends ?code=... to the redirect
+  // URL. If the redirect allow-list strips the /reset-pin path, the code lands
+  // on the site root (or /home) instead — forward it to the reset page.
+  const { pathname, searchParams } = request.nextUrl
+  if ((pathname === '/' || pathname === '/home') && searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/reset-pin'
+    return NextResponse.redirect(url)
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
