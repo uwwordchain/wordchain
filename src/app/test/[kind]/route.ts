@@ -8,7 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { todayCT } from '@/lib/time'
+import { todayCT, ctWallTimeToUTC } from '@/lib/time'
 
 export async function GET(
   request: NextRequest,
@@ -17,13 +17,27 @@ export async function GET(
   const { kind } = await params
   const admin = await createAdminClient()
   const origin = request.nextUrl.origin
+  const today = todayCT()
 
-  const { data: gameDay } = await admin
-    .from('game_days').select('id').eq('play_date', todayCT()).maybeSingle()
+  let { data: gameDay } = await admin
+    .from('game_days').select('id').eq('play_date', today).maybeSingle()
 
   if (!gameDay) {
-    // No game today — send the tester to the launch button
-    return NextResponse.redirect(`${origin}/admin/chains`)
+    // Pre-launch window (before the morning cron): bootstrap today's game
+    // day from the scheduled word so test links work at any hour.
+    // No chains/texts are created — just the game day itself.
+    const { data: queued } = await admin
+      .from('word_queue').select('word').eq('play_date', today).maybeSingle()
+    if (!queued) {
+      // Nothing scheduled at all — tester needs to add a word first
+      return NextResponse.redirect(`${origin}/admin/words`)
+    }
+    const { data: created, error } = await admin
+      .from('game_days')
+      .insert({ play_date: today, word: queued.word, closes_at: ctWallTimeToUTC(today, 23, 59) })
+      .select('id').single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    gameDay = created
   }
 
   const { data: chains } = await admin
