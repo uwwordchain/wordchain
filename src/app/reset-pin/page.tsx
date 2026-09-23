@@ -17,6 +17,7 @@ function ResetPinForm() {
   const [newPin, setNewPin]     = useState('')
   const [pinKey, setPinKey]     = useState(0)
   const [error, setError]       = useState('')
+  const [invalidDetail, setInvalidDetail] = useState('')
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,10 +28,23 @@ function ResetPinForm() {
     // Supabase appends ?code=... (PKCE flow) after the user clicks the reset link.
     // Exchange it for a session so we can call updateUser.
     const code = searchParams.get('code')
-    if (!code) { setStep('invalid'); return }
+    if (!code) {
+      // Supabase reports verify failures (used/expired token) as error params,
+      // either in the query string or the URL fragment depending on flow.
+      const hashParams = new URLSearchParams(window.location.hash.slice(1))
+      const desc = searchParams.get('error_description') || searchParams.get('error_code')
+        || hashParams.get('error_description') || hashParams.get('error_code')
+      setInvalidDetail(desc ? `Details: ${desc.replace(/\+/g, ' ')}` : 'Details: no code present in link')
+      setStep('invalid')
+      return
+    }
 
     supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) { setStep('invalid'); return }
+      if (error) {
+        setInvalidDetail(`Details: ${error.message}`)
+        setStep('invalid')
+        return
+      }
       setStep('enter-new')
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -98,6 +112,9 @@ function ResetPinForm() {
             <p style={{ fontSize: 'var(--text-base)', color: 'var(--mid)', marginBottom: 'var(--space-6)', lineHeight: 1.6 }}>
               Reset links expire after 1 hour. Request a new one from the login page.
             </p>
+            {invalidDetail && (
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--mid)', marginBottom: 'var(--space-6)' }}>{invalidDetail}</p>
+            )}
             <Button onClick={() => router.push('/login')}>Back to login</Button>
           </>
         )}
