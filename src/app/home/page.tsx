@@ -49,6 +49,7 @@ export default async function HomePage() {
     { data: yesterdayGame },
     { data: allChainWords },
     { data: allChains },
+    { data: queuedToday },
   ] = await Promise.all([
     user
       ? adminDb.from('users').select('is_admin').eq('id', user.id).maybeSingle()
@@ -63,6 +64,7 @@ export default async function HomePage() {
       .maybeSingle(),
     adminDb.from('chain_words').select('chain_id'),
     adminDb.from('chains').select('id, slot, game_day:game_days(play_date)'),
+    adminDb.from('word_queue').select('word').eq('play_date', today).maybeSingle(),
   ])
 
   const isAdmin = profileRes.data?.is_admin ?? false
@@ -92,8 +94,14 @@ export default async function HomePage() {
     }
   }
 
-  const game = gameDay ?? PLACEHOLDER_GAME
-  const isPlaceholder = !gameDay
+  // Word source of truth: launched game day → scheduled word from the
+  // admin queue (pre-launch window between midnight and chain launch) →
+  // sample data only if neither exists.
+  const isPreLaunch = !gameDay && !!queuedToday
+  const game = gameDay ?? (queuedToday
+    ? { ...PLACEHOLDER_GAME, play_date: today, word: queuedToday.word }
+    : PLACEHOLDER_GAME)
+  const isPlaceholder = !gameDay && !queuedToday
 
   // Yesterday's winning chain — the chain with the most words
   const yesterdayChains = ((yesterdayGame?.chains as any[]) ?? [])
@@ -141,7 +149,7 @@ export default async function HomePage() {
         padding: 'var(--space-4)',
       }}>
         <p className="eyebrow" style={{ marginBottom: 'var(--space-2)' }}>
-          {isPlaceholder ? 'Sample · ' : ''}{formatDate(game.closes_at)}
+          {isPlaceholder ? 'Sample · ' : ''}{formatDate(game.play_date)}
         </p>
         <p style={{ fontSize: 'var(--text-base)', color: 'var(--mid)', marginBottom: 'var(--space-1)', fontWeight: 400 }}>
           Today's word
@@ -150,7 +158,7 @@ export default async function HomePage() {
           {game.word}
         </div>
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
-          Closes at {formatCloseTime(game.closes_at)}
+          {isPreLaunch ? 'Chains launch this morning' : `Closes at ${formatCloseTime(game.closes_at)}`}
         </p>
       </div>
 
