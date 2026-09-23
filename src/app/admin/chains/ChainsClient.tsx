@@ -475,10 +475,10 @@ export function ChainsClient({
 
         {bumpMsg && <p style={{ fontSize: 'var(--text-xs)', color: bumpMsg.startsWith('✓') ? 'green' : '#b44', marginBottom: 'var(--space-3)' }}>{bumpMsg}</p>}
 
-        {!gameDay ? (
+        {activeChains.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 'var(--space-4) 0', border: '1px solid var(--border-light)' }}>
             <p style={{ fontSize: 'var(--text-base)', color: 'var(--light)', marginBottom: 'var(--space-3)' }}>
-              No game launched today.
+              {gameDay ? 'No chains launched yet today.' : 'No game launched today.'}
             </p>
             <button onClick={launchNow} disabled={launching}
               style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-xs)', fontWeight: 700, padding: 'var(--space-2) var(--space-4)', background: 'var(--black)', color: 'var(--white)', border: 'none', cursor: 'pointer', opacity: launching ? 0.5 : 1 }}>
