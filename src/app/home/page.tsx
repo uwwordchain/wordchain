@@ -30,7 +30,10 @@ function formatDate(dateStr: string) {
 }
 
 function formatCloseTime(closeStr: string) {
-  return new Date(closeStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
+  // Always display in Central Time — the server renders in UTC otherwise
+  return new Date(closeStr).toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: 'America/Chicago',
+  })
 }
 
 export default async function HomePage() {
