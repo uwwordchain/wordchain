@@ -3,27 +3,11 @@ import { Topbar } from '@/components/ui/Topbar'
 import { AdBanner } from '@/components/player/AdBanner'
 import { RecoveryRedirect } from '@/components/player/RecoveryRedirect'
 import { todayCT, yesterdayCT } from '@/lib/time'
-import type { GameDay, ChainWord, User } from '@/types'
+import type { GameDay } from '@/types'
 
-const PLACEHOLDER_GAME: GameDay = {
-  id: 'placeholder',
-  play_date: new Date().toISOString().split('T')[0],
-  word: 'SPARK',
-  launched_at: new Date().toISOString(),
-  closes_at: new Date(new Date().setHours(23, 59, 0, 0)).toISOString(),
-}
-
-const PLACEHOLDER_CHAIN: { slot: string; words: (ChainWord & { user: User })[] } = {
-  slot: 'A',
-  words: [
-    { id: '1', chain_id: 'c1', user_id: 'u1', word: 'KNIGHT', position: 1, submitted_at: '', user: { id: 'u1', email: 'alex@wisc.edu', phone: null, first_name: 'Alex', display_name: 'Alex T.', is_admin: false, created_at: '' } },
-    { id: '2', chain_id: 'c1', user_id: 'u2', word: 'TORCH',  position: 2, submitted_at: '', user: { id: 'u2', email: 'bri@wisc.edu',  phone: null, first_name: 'Bri',  display_name: 'Bri M.', is_admin: false, created_at: '' } },
-    { id: '3', chain_id: 'c1', user_id: 'u3', word: 'HELLO',  position: 3, submitted_at: '', user: { id: 'u3', email: 'cade@wisc.edu', phone: null, first_name: 'Cade', display_name: 'Cade R.', is_admin: false, created_at: '' } },
-    { id: '4', chain_id: 'c1', user_id: 'u4', word: 'OCEAN',  position: 4, submitted_at: '', user: { id: 'u4', email: 'dee@wisc.edu',  phone: null, first_name: 'Dee',  display_name: 'Dee K.', is_admin: false, created_at: '' } },
-    { id: '5', chain_id: 'c1', user_id: 'u5', word: 'NEON',   position: 5, submitted_at: '', user: { id: 'u5', email: 'eli@wisc.edu',  phone: null, first_name: 'Eli',  display_name: 'Eli P.', is_admin: false, created_at: '' } },
-    { id: '6', chain_id: 'c1', user_id: 'u6', word: 'NOBLE',  position: 6, submitted_at: '', user: { id: 'u6', email: 'fay@wisc.edu',  phone: null, first_name: 'Fay',  display_name: 'Fay Z.', is_admin: false, created_at: '' } },
-  ],
-}
+// Public launch date — before this, the home page shows a coming-soon banner
+// on days with no game scheduled.
+const LAUNCH_DATE = '2026-10-01'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -100,14 +84,15 @@ export default async function HomePage() {
 
   // Word source of truth: launched game day → scheduled word from the
   // admin queue (pre-launch window between midnight and chain launch) →
-  // sample data only if neither exists.
+  // no game at all (coming-soon banner before launch day).
   const isPreLaunch = !gameDay && !!queuedToday
-  const game = gameDay ?? (queuedToday
-    ? { ...PLACEHOLDER_GAME, play_date: today, word: queuedToday.word }
-    : PLACEHOLDER_GAME)
-  const isPlaceholder = !gameDay && !queuedToday
+  const game: Pick<GameDay, 'play_date' | 'word' | 'closes_at'> | null = gameDay ?? (queuedToday
+    ? { play_date: today, word: queuedToday.word, closes_at: '' }
+    : null)
+  const beforeLaunch = today < LAUNCH_DATE
 
-  // Yesterday's winning chain — the chain with the most words
+  // Yesterday's winning chain — the chain with the most words.
+  // Hidden entirely when yesterday had no chains.
   const yesterdayChains = ((yesterdayGame?.chains as any[]) ?? [])
     .map(c => ({
       slot: c.slot as string,
@@ -116,8 +101,6 @@ export default async function HomePage() {
     .filter(c => c.words.length > 0)
     .sort((a, b) => b.words.length - a.words.length)
   const winner = yesterdayChains[0] ?? null
-  const chain = winner ?? PLACEHOLDER_CHAIN
-  const isWinnerPlaceholder = !winner
 
   // All-time record (longest chain ever)
   const chainCounts: Record<string, number> = {}
@@ -147,24 +130,51 @@ export default async function HomePage() {
       />
       <Topbar showLogin={!user} isLoggedIn={!!user} isAdmin={isAdmin} />
 
-      {/* Today's Word Card */}
+      {/* Today's Word Card / launch banner */}
       <div style={{
         margin: 'var(--space-4) var(--space-4) 0',
         border: '2px solid var(--black)',
         padding: 'var(--space-4)',
       }}>
-        <p className="eyebrow" style={{ marginBottom: 'var(--space-2)' }}>
-          {isPlaceholder ? 'Sample · ' : ''}{formatDate(game.play_date)}
-        </p>
-        <p style={{ fontSize: 'var(--text-base)', color: 'var(--mid)', marginBottom: 'var(--space-1)', fontWeight: 400 }}>
-          Today's word
-        </p>
-        <div className="word-upper" style={{ fontSize: 'var(--text-hero)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: 'var(--space-2)' }}>
-          {game.word}
-        </div>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
-          {isPreLaunch ? 'Chains launch this morning' : `Closes at ${formatCloseTime(game.closes_at)}`}
-        </p>
+        {game ? (
+          <>
+            <p className="eyebrow" style={{ marginBottom: 'var(--space-2)' }}>
+              {formatDate(game.play_date)}
+            </p>
+            <p style={{ fontSize: 'var(--text-base)', color: 'var(--mid)', marginBottom: 'var(--space-1)', fontWeight: 400 }}>
+              Today's word
+            </p>
+            <div className="word-upper" style={{ fontSize: 'var(--text-hero)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: 'var(--space-2)' }}>
+              {game.word}
+            </div>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
+              {isPreLaunch ? 'Chains launch this morning' : `Closes at ${formatCloseTime(game.closes_at)}`}
+            </p>
+          </>
+        ) : beforeLaunch ? (
+          <>
+            <p className="eyebrow" style={{ marginBottom: 'var(--space-2)' }}>Coming soon</p>
+            <p style={{ fontSize: 'var(--text-base)', color: 'var(--mid)', marginBottom: 'var(--space-1)', fontWeight: 400 }}>
+              UW WordChain launches
+            </p>
+            <div className="word-upper" style={{ fontSize: 'var(--text-hero)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: 'var(--space-2)' }}>
+              OCT 1
+            </div>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
+              Sign up now — players are picked from the community every day.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="eyebrow" style={{ marginBottom: 'var(--space-2)' }}>{formatDate(today)}</p>
+            <div className="word-upper" style={{ fontSize: 'var(--text-hero)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, marginBottom: 'var(--space-2)' }}>
+              NO GAME TODAY
+            </div>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
+              Check back tomorrow.
+            </p>
+          </>
+        )}
       </div>
 
       {/* CTA */}
@@ -184,39 +194,42 @@ export default async function HomePage() {
         ) : null}
       </div>
 
-      {/* Divider */}
-      <div style={{ padding: 'var(--space-5) var(--space-4) 0' }}>
-        <hr className="divider" />
-      </div>
+      {/* Yesterday's Winner — hidden when yesterday had no chains */}
+      {winner && (
+        <>
+          <div style={{ padding: 'var(--space-5) var(--space-4) 0' }}>
+            <hr className="divider" />
+          </div>
 
-      {/* Yesterday's Winner (per wireframe) */}
-      <div style={{ padding: 'var(--space-4) var(--space-4) 0' }}>
-        <p className="eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
-          {isWinnerPlaceholder ? 'Sample · ' : ''}Yesterday's winner · Chain {chain.slot}
-        </p>
-        <div>
-          {chain.words.map((w: any, idx: number) => (
-            <div
-              key={w.id ?? idx}
-              className="chain-row"
-              style={{ borderBottom: idx < chain.words.length - 1 ? '1px solid var(--border-light)' : 'none' }}
-            >
-              <div className="chain-row__num">{idx + 1}</div>
-              <div style={{ flex: 1 }}>
-                <div className="chain-row__word">{w.word}</div>
-                <div className="chain-row__name">{w.user?.display_name ?? w.user?.first_name ?? 'Former player'}</div>
-              </div>
+          <div style={{ padding: 'var(--space-4) var(--space-4) 0' }}>
+            <p className="eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+              Yesterday's winner · Chain {winner.slot}
+            </p>
+            <div>
+              {winner.words.map((w: any, idx: number) => (
+                <div
+                  key={w.id ?? idx}
+                  className="chain-row"
+                  style={{ borderBottom: idx < winner.words.length - 1 ? '1px solid var(--border-light)' : 'none' }}
+                >
+                  <div className="chain-row__num">{idx + 1}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className="chain-row__word">{w.word}</div>
+                    <div className="chain-row__name">{w.user?.display_name ?? w.user?.first_name ?? 'Former player'}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {record && (
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)', marginTop: 'var(--space-2)' }}>
-            All-time record:{' '}
-            <strong style={{ color: 'var(--black)' }}>{record.count} words</strong>
-            {' '}· Chain {record.slot}{record.date ? ` · ${record.date}` : ''}
-          </p>
-        )}
-      </div>
+            {record && (
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)', marginTop: 'var(--space-2)' }}>
+                All-time record:{' '}
+                <strong style={{ color: 'var(--black)' }}>{record.count} words</strong>
+                {' '}· Chain {record.slot}{record.date ? ` · ${record.date}` : ''}
+              </p>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="app-footer">uwwordchain.app</div>
     </div>
