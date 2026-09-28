@@ -8,7 +8,20 @@ type Slot = typeof SLOTS[number]
 interface StarterRow { id: string; play_date: string; chain_slot: string; user_id: string | null; user?: { first_name: string; display_name: string | null } | null }
 interface User { id: string; first_name: string; display_name: string | null; email: string; phone: string | null }
 interface ChainWord { word: string; position: number; user?: { first_name: string; display_name: string | null } | null }
-interface ActiveChain { id: string; slot: string; last_activity_at: string | null; chain_words: ChainWord[] }
+interface ActiveChain {
+  id: string
+  slot: string
+  last_activity_at: string | null
+  chain_words: ChainWord[]
+  /** Pre-composed text an admin can send from their own phone (A2P-pending bridge) */
+  manual?: { phone: string; message: string } | null
+}
+
+/** sms: deep link — iOS and Android disagree on the separator */
+function smsHref(phone: string, message: string) {
+  const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent)
+  return `sms:${phone}${isIOS ? '&' : '?'}body=${encodeURIComponent(message)}`
+}
 
 function formatDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -509,6 +522,18 @@ export function ChainsClient({
                         </span>
                       </div>
                       <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                        {chain.manual && (
+                          <a
+                            href={smsHref(chain.manual.phone, chain.manual.message)}
+                            onClick={() => {
+                              navigator.clipboard?.writeText(`${chain.manual!.phone}\n${chain.manual!.message}`).catch(() => {})
+                              setBumpMsg(`✓ Chain ${chain.slot} text copied — paste into Messages if it didn't open`)
+                            }}
+                            title="Send this chain's text from your own phone (bridge while Twilio A2P approval is pending). Opens Messages pre-filled; also copies the number + message."
+                            style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-2xs)', fontWeight: 700, padding: '3px 8px', background: 'none', color: 'var(--mid)', border: '1px dashed var(--border-light)', cursor: 'pointer', textDecoration: 'none' }}>
+                            📱 Manual
+                          </a>
+                        )}
                         <button onClick={() => bump(chain.id)} disabled={bumping === chain.id || words.length === 0}
                           title={words.length === 0 ? 'No words yet — nobody to bump' : 'Text the last player a reminder to re-share their link'}
                           style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-2xs)', fontWeight: 700, padding: '3px 8px', background: stale ? 'var(--black)' : 'none', color: stale ? 'var(--white)' : 'var(--mid)', border: stale ? 'none' : '1px solid var(--border-light)', cursor: words.length === 0 ? 'not-allowed' : 'pointer', opacity: bumping === chain.id || words.length === 0 ? 0.5 : 1 }}>

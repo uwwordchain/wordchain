@@ -40,9 +40,56 @@ export default async function AdminChainsPage() {
   if (gameDay) {
     const { data } = await admin
       .from('chains')
-      .select('id, slot, last_activity_at, chain_words(id, word, position, user:users(first_name, display_name))')
+      .select('id, slot, last_activity_at, chain_words(id, word, position, user:users(id, first_name, display_name, phone))')
       .eq('game_day_id', gameDay.id).order('slot')
     activeChains = data ?? []
+
+    // Manual-send bridge: compose the exact text for each chain so an admin
+    // can send it from their own phone (works even while the Twilio A2P
+    // campaign is pending and carrier delivery is blocked).
+    const chainIds = activeChains.map(c => c.id)
+    if (chainIds.length) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.app'
+      const { data: invites } = await admin
+        .from('chain_invites')
+        .select('chain_id, token, invitee_phone, inviter_user_id, used_at, created_at')
+        .in('chain_id', chainIds)
+        .order('created_at', { ascending: false })
+
+      for (const chain of activeChains) {
+        const words = [...(chain.chain_words ?? [])].sort((a: any, b: any) => b.position - a.position)
+        const chainInvites = (invites ?? []).filter(i => i.chain_id === chain.id)
+        let manual: { phone: string; message: string } | null = null
+
+        if (words.length === 0) {
+          // Not started — resend the starter text (invite created at launch)
+          const starterInvite = chainInvites.find(i => !i.used_at && i.invitee_phone)
+          if (starterInvite) {
+            manual = {
+              phone: starterInvite.invitee_phone,
+              message:
+                `You've been selected to start Chain ${chain.slot} in today's UW WordChain! ` +
+                `Today's word is ${gameDay.word.toUpperCase()}. ` +
+                `Your first word must start with ${gameDay.word.slice(-1).toUpperCase()}. ` +
+                `Play here: ${appUrl}/play/${starterInvite.token}`,
+            }
+          }
+        } else {
+          // In progress — bump text to the last player (their unused share link)
+          const lastPlayer = words[0]?.user as any
+          const invite = chainInvites.find(i => !i.used_at && i.inviter_user_id === lastPlayer?.id)
+          if (lastPlayer?.phone && invite) {
+            manual = {
+              phone: lastPlayer.phone,
+              message:
+                `${lastPlayer.first_name ?? 'Hey'}, your chain's gone cold! Chain ${chain.slot} is stuck on ` +
+                `${words[0].word.toUpperCase()} — try sending it again: ${appUrl}/play/${invite.token}`,
+            }
+          }
+        }
+        chain.manual = manual
+      }
+    }
   }
 
   // All-time longest
