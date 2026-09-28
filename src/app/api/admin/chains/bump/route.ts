@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   const firstName = lastPlayer?.first_name ?? 'Hey'
 
   const body =
-    `${firstName}, your chain's gone cold! Chain ${chain.slot} is stuck on ` +
+    `${firstName}, your UW WordChain's gone cold! Chain ${chain.slot} is stuck on ` +
     `${lastWord.word.toUpperCase()} — try sending it again: ${appUrl}/play/${token}`
 
   try {

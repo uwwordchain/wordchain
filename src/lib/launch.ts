@@ -127,7 +127,7 @@ export async function launchTodaysChains(): Promise<LaunchResult> {
       `You've been selected to start Chain ${slot} in today's UW WordChain! ` +
       `Today's word is ${gameDay.word.toUpperCase()}. ` +
       `Your first word must start with ${gameDay.word.slice(-1).toUpperCase()}. ` +
-      `Play here: ${appUrl}/play/${token}`
+      `Play here: ${appUrl}/play/${token} Reply STOP to opt out.`
 
     try {
       await sendSMS(phone, body)

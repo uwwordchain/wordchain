@@ -71,7 +71,7 @@ export default async function AdminChainsPage() {
                 `You've been selected to start Chain ${chain.slot} in today's UW WordChain! ` +
                 `Today's word is ${gameDay.word.toUpperCase()}. ` +
                 `Your first word must start with ${gameDay.word.slice(-1).toUpperCase()}. ` +
-                `Play here: ${appUrl}/play/${starterInvite.token}`,
+                `Play here: ${appUrl}/play/${starterInvite.token} Reply STOP to opt out.`,
             }
           }
         } else {
@@ -82,7 +82,7 @@ export default async function AdminChainsPage() {
             manual = {
               phone: lastPlayer.phone,
               message:
-                `${lastPlayer.first_name ?? 'Hey'}, your chain's gone cold! Chain ${chain.slot} is stuck on ` +
+                `${lastPlayer.first_name ?? 'Hey'}, your UW WordChain's gone cold! Chain ${chain.slot} is stuck on ` +
                 `${words[0].word.toUpperCase()} — try sending it again: ${appUrl}/play/${invite.token}`,
             }
           }
