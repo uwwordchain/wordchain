@@ -9,7 +9,7 @@
  * possible (slots are constrained to A–F by the schema). Remove before launch.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { todayCT, ctWallTimeToUTC } from '@/lib/time'
 
 const SLOTS = ['A', 'B', 'C', 'D', 'E', 'F'] // must match chains_slot_check
@@ -28,6 +28,15 @@ export async function GET(
   { params }: { params: Promise<{ kind: string }> }
 ) {
   const { kind } = await params
+
+  // Admin-only: these routes mint real invite tokens and create real chains.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.redirect(new URL('/home', request.nextUrl.origin))
+  const adminCheck = await createAdminClient()
+  const { data: profile } = await adminCheck.from('users').select('is_admin').eq('id', user.id).maybeSingle()
+  if (!profile?.is_admin) return NextResponse.redirect(new URL('/home', request.nextUrl.origin))
+
   const admin = await createAdminClient()
   const origin = request.nextUrl.origin
   const today = todayCT()

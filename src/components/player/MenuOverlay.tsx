@@ -16,19 +16,6 @@ const ADMIN_LINKS = [
   { href: '/admin/players', label: 'Players' },
 ]
 
-// TEMPORARY — quick links to screens normally reachable only via invite
-// links or specific states. Remove this section before launch.
-// Each /test/* link mints a FRESH invite token on every click,
-// so these never go stale or show "link has been used."
-const TESTING_LINKS = [
-  { href: '/test/start', label: 'Play — start of chain' },
-  { href: '/test/mid',   label: 'Play — mid-chain' },
-  { href: '/test/used',  label: 'Play — used link' },
-  { href: '/signup',     label: 'Sign up' },
-  { href: '/login',      label: 'Log in' },
-  { href: '/reset-pin',  label: 'Reset PIN' },
-]
-
 export function MenuOverlay({ isOpen, onClose, isLoggedIn, isAdmin = false }: MenuOverlayProps) {
   const [loggingOut, setLoggingOut] = useState(false)
 
@@ -157,22 +144,6 @@ export function MenuOverlay({ isOpen, onClose, isLoggedIn, isAdmin = false }: Me
             </>
           )}
 
-          {/* TEMPORARY testing section — remove before launch */}
-          <NavDivider label="Testing" />
-          {TESTING_LINKS.map(link => (
-            <NavLink key={link.href} href={link.href} onClick={onClose} dim>
-              {link.label}
-            </NavLink>
-          ))}
-          <p style={{
-            padding: 'var(--space-1) var(--space-4)',
-            fontSize: 'var(--text-2xs)',
-            color: 'var(--light)',
-            lineHeight: 1.5,
-          }}>
-            Play screens show the new-user view when logged out and the
-            player view when logged in — log out to test both.
-          </p>
         </nav>
 
         <div style={{ padding: 'var(--space-4)', borderTop: '1px solid var(--border-light)' }}>

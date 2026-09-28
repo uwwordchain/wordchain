@@ -55,7 +55,7 @@ export function Topbar({
         {showLogin && !isLoggedIn && (
           <a href={loginHref} className="topbar__login">Log in</a>
         )}
-        {showMenu && (
+        {showMenu && isLoggedIn && (
           <button
             className="topbar__menu"
             onClick={() => setMenuOpen(true)}
