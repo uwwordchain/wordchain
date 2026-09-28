@@ -64,6 +64,22 @@ export async function launchTodaysChains(): Promise<LaunchResult> {
 
   const usedPhones = new Set<string>()
 
+  // Nobody can be randomly picked if they're already spoken for today:
+  // (a) scheduled starters for any of today's slots, and
+  // (b) starters of chains already launched today (e.g. via the admin button).
+  for (const r of starterRows ?? []) {
+    const phone = r.phone_override ?? (allUsers ?? []).find(u => u.id === r.user_id)?.phone
+    if (phone) usedPhones.add(phone)
+  }
+  {
+    const { data: launchedChains } = await admin
+      .from('chains').select('starter_user_id').eq('game_day_id', gameDay.id)
+    for (const c of launchedChains ?? []) {
+      const phone = (allUsers ?? []).find(u => u.id === c.starter_user_id)?.phone
+      if (phone) usedPhones.add(phone)
+    }
+  }
+
   function pickRandom<T extends { phone: string | null }>(pool: T[]): T | null {
     const avail = pool.filter(u => u.phone && !usedPhones.has(u.phone))
     if (!avail.length) return null
