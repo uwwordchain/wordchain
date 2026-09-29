@@ -145,7 +145,11 @@ function SignupForm() {
                 style={{ marginTop: 2, accentColor: 'var(--black)' }}
               />
               <span style={{ fontSize: 10, color: 'var(--mid)', lineHeight: 1.5 }}>
-                I consent to receive SMS game invites. Msg &amp; data rates may apply. Reply STOP to opt out.
+                I agree to receive text messages from UW WordChain about game invites,
+                reminders, and results. Message frequency varies (up to 3 msgs/day).
+                Msg &amp; data rates may apply. Reply HELP for help, STOP to cancel.
+                See our <a href="/terms" style={{ color: 'var(--black)' }}>Terms</a> and{' '}
+                <a href="/privacy" style={{ color: 'var(--black)' }}>Privacy Policy</a>.
               </span>
             </label>
             <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
