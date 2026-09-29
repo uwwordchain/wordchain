@@ -40,7 +40,7 @@ export default async function AdminChainsPage() {
   if (gameDay) {
     const { data } = await admin
       .from('chains')
-      .select('id, slot, last_activity_at, chain_words(id, word, position, user:users(id, first_name, display_name, phone))')
+      .select('id, slot, last_activity_at, starter:starter_user_id(first_name, display_name), chain_words(id, word, position, user:users(id, first_name, display_name, phone))')
       .eq('game_day_id', gameDay.id).order('slot')
     activeChains = data ?? []
 

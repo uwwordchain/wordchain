@@ -13,6 +13,8 @@ interface ActiveChain {
   slot: string
   last_activity_at: string | null
   chain_words: ChainWord[]
+  /** The user this chain's starter invite went to */
+  starter?: { first_name: string | null; display_name: string | null } | null
   /** Pre-composed text an admin can send from their own phone (A2P-pending bridge) */
   manual?: { phone: string; message: string } | null
 }
@@ -556,7 +558,7 @@ export function ChainsClient({
                       }}>
                         {words.length === 0 ? (
                           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--light)', padding: 'var(--space-2) 0' }}>
-                            No words yet — waiting on the starter.
+                            No words yet — waiting on {chain.starter ? (chain.starter.display_name ?? chain.starter.first_name ?? 'the starter') : 'the starter'} to begin the chain.
                           </p>
                         ) : words.map((w, idx) => (
                           <div key={`${chain.id}-${w.position}`} style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)', padding: '6px 0', borderBottom: idx < words.length - 1 ? '1px solid var(--border-light)' : 'none' }}>
