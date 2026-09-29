@@ -71,7 +71,7 @@ export default async function AdminChainsPage() {
                 `You've been selected to start Chain ${chain.slot} in today's UW WordChain! ` +
                 `Today's word is ${gameDay.word.toUpperCase()}. ` +
                 `Your first word must start with ${gameDay.word.slice(-1).toUpperCase()}. ` +
-                `Play here: ${appUrl}/play/${starterInvite.token} Reply STOP to opt out.`,
+                `Play here: ${appUrl}/play/${starterInvite.token}`,
             }
           }
         } else {
