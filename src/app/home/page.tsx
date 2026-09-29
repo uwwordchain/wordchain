@@ -161,7 +161,9 @@ export default async function HomePage() {
               OCT 1
             </div>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--light)' }}>
-              Sign up now — players are picked from the community every day.
+              {user
+                ? "You're signed up — players are picked from the community every day. Keep an eye on your texts!"
+                : 'Sign up now — players are picked from the community every day.'}
             </p>
           </>
         ) : (
