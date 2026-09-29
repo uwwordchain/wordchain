@@ -272,8 +272,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--mid);
-  background: var(--white);
+  color: var(--white);
+  background: var(--black);
   flex-shrink: 0;
 }
 
