@@ -19,9 +19,6 @@ DONE_FILE = pathlib.Path.home() / '.uwwordchain-a2p-notified'
 NOTIFY_EMAIL = 'elenoraha@gmail.com'
 MESSAGING_SERVICE_SID = 'MGc02d23997d9e7031105fd15f2f0abe15'
 
-if DONE_FILE.exists():
-    raise SystemExit(0)
-
 env = {}
 for line in ENV_FILE.read_text().splitlines():
     line = line.strip()
@@ -41,6 +38,11 @@ status = statuses[0] if statuses else 'UNKNOWN'
 print(f'campaign status: {status}')
 
 if status in ('IN_PROGRESS', 'PENDING', 'UNKNOWN'):
+    raise SystemExit(0)
+
+# Only notify once per distinct status — a resubmitted campaign resets the
+# cycle (FAILED -> IN_PROGRESS -> VERIFIED still triggers the VERIFIED email).
+if DONE_FILE.exists() and DONE_FILE.read_text().strip() == status:
     raise SystemExit(0)
 
 # Status changed — send the notification
@@ -63,6 +65,8 @@ email = json.dumps({
 req = urllib.request.Request('https://api.resend.com/emails', data=email, headers={
     'Authorization': f"Bearer {env['RESEND_API_KEY']}",
     'Content-Type': 'application/json',
+    # Resend sits behind Cloudflare, which rejects urllib's default UA (403 / error 1010)
+    'User-Agent': 'uwwordchain-a2p-check/1.0',
 }, method='POST')
 resp = json.load(urllib.request.urlopen(req))
 print('notification sent:', resp.get('id'))
