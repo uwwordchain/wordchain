@@ -33,17 +33,22 @@ export async function POST(request: NextRequest) {
   const { words, dates } = await request.json()
   if (!words?.length) return NextResponse.json({ error: 'No words provided' }, { status: 400 })
 
-  // Find the next available date (day after the last queued word, or tomorrow)
-  const { data: lastEntry } = await admin
-    .from('word_queue')
-    .select('play_date')
-    .order('play_date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Find the next available date: the day after the last queued word,
+  // but never earlier than today (if today is still open — no word queued
+  // and no game launched yet) or tomorrow otherwise.
+  const todayStr = dateCT(0)
+  const [{ data: lastEntry }, { data: todayGame }] = await Promise.all([
+    admin.from('word_queue').select('play_date')
+      .order('play_date', { ascending: false }).limit(1).maybeSingle(),
+    admin.from('game_days').select('id').eq('play_date', todayStr).maybeSingle(),
+  ])
 
-  const startDate = lastEntry?.play_date
-    ? new Date(new Date(lastEntry.play_date + 'T00:00:00').getTime() + 86400000)
-    : new Date(dateCT(1) + 'T00:00:00') // tomorrow, Central Time
+  const todayIsOpen = !todayGame && lastEntry?.play_date !== todayStr
+  const minStart = todayIsOpen ? todayStr : dateCT(1)
+  const afterLast = lastEntry?.play_date
+    ? new Date(new Date(lastEntry.play_date + 'T00:00:00').getTime() + 86400000).toISOString().split('T')[0]
+    : minStart
+  const startDate = new Date(`${afterLast > minStart ? afterLast : minStart}T00:00:00`)
 
   const rows = words.map((word: string, i: number) => {
     const playDate = dates?.[i] ?? (() => {
