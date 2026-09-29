@@ -533,7 +533,7 @@ export function ChainsClient({
                             }}
                             title="Send this chain's text from your own phone (bridge while Twilio A2P approval is pending). Opens Messages pre-filled; also copies the number + message."
                             style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-2xs)', fontWeight: 700, padding: '3px 8px', background: 'none', color: 'var(--mid)', border: '1px dashed var(--border-light)', cursor: 'pointer', textDecoration: 'none' }}>
-                            📱 Manual
+                            Manual
                           </a>
                         )}
                         <button onClick={() => bump(chain.id)} disabled={bumping === chain.id || words.length === 0}
