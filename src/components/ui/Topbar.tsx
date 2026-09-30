@@ -42,13 +42,14 @@ export function Topbar({
         {title ? (
           <span className="topbar__title">{title}</span>
         ) : (
-          <a href="/home" className="topbar__title" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <a href="/home" className="topbar__title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', textDecoration: 'none', color: 'var(--black)' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
-              alt="UW WordChain"
+              alt=""
               style={{ height: '1.5rem', width: 'auto', display: 'block' }}
             />
+            <span>UW WordChain</span>
           </a>
         )}
 
