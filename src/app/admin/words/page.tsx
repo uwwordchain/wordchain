@@ -6,12 +6,13 @@ export default async function AdminWordsPage() {
   const admin = await createAdminClient()
   const today = todayCT()
 
-  // Queue = the schedule; game_days = what actually launched today.
+  // Queue = ordered list of upcoming words (play_date is just the sort
+  // key); game_days = what actually launched today. Launched words are
+  // deleted from the queue, so everything here is still unused.
   const [{ data: words }, { data: launchedGame }] = await Promise.all([
     admin
       .from('word_queue')
       .select('*')
-      .gte('play_date', today)
       .order('play_date', { ascending: true }),
     admin
       .from('game_days')

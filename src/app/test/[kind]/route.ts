@@ -10,6 +10,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { peekNextWord } from '@/lib/launch'
 import { todayCT, ctWallTimeToUTC } from '@/lib/time'
 
 const SLOTS = ['A', 'B', 'C', 'D', 'E', 'F'] // must match chains_slot_check
@@ -46,9 +47,8 @@ export async function GET(
 
   if (!gameDay) {
     // Pre-launch window (before the morning cron): bootstrap today's game
-    // day from the scheduled word so test links work at any hour.
-    const { data: queued } = await admin
-      .from('word_queue').select('word').eq('play_date', today).maybeSingle()
+    // day from the next queued word so test links work at any hour.
+    const queued = await peekNextWord(admin)
     if (!queued) {
       return NextResponse.redirect(`${origin}/admin/words`)
     }
@@ -57,6 +57,8 @@ export async function GET(
       .insert({ play_date: today, word: queued.word, closes_at: ctWallTimeToUTC(today, 23, 59) })
       .select('id, word').single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    // Word is consumed — remove it from the queue
+    await admin.from('word_queue').delete().eq('id', queued.id)
     gameDay = created
   }
 

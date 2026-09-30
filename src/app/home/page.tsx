@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { Topbar } from '@/components/ui/Topbar'
 import { AdBanner } from '@/components/player/AdBanner'
 import { RecoveryRedirect } from '@/components/player/RecoveryRedirect'
+import { peekNextWord, willLaunchToday } from '@/lib/launch'
 import { todayCT, yesterdayCT } from '@/lib/time'
 import type { GameDay } from '@/types'
 
@@ -37,7 +38,8 @@ export default async function HomePage() {
     { data: yesterdayGame },
     { data: allChainWords },
     { data: allChains },
-    { data: queuedToday },
+    nextWord,
+    launchCheck,
   ] = await Promise.all([
     user
       ? adminDb.from('users').select('is_admin').eq('id', user.id).maybeSingle()
@@ -52,7 +54,8 @@ export default async function HomePage() {
       .maybeSingle(),
     adminDb.from('chain_words').select('chain_id'),
     adminDb.from('chains').select('id, slot, game_day:game_days(play_date)'),
-    adminDb.from('word_queue').select('word').eq('play_date', today).maybeSingle(),
+    peekNextWord(adminDb),
+    willLaunchToday(adminDb),
   ])
 
   const isAdmin = profileRes.data?.is_admin ?? false
@@ -82,12 +85,12 @@ export default async function HomePage() {
     }
   }
 
-  // Word source of truth: launched game day → scheduled word from the
-  // admin queue (pre-launch window between midnight and chain launch) →
-  // no game at all (coming-soon banner before launch day).
-  const isPreLaunch = !gameDay && !!queuedToday
-  const game: Pick<GameDay, 'play_date' | 'word' | 'closes_at'> | null = gameDay ?? (queuedToday
-    ? { play_date: today, word: queuedToday.word, closes_at: '' }
+  // Word source of truth: launched game day → next word in the queue,
+  // but only if today is actually going to launch (pre-launch window
+  // between midnight and the morning cron) → no game at all.
+  const isPreLaunch = !gameDay && launchCheck.launch && !!nextWord
+  const game: Pick<GameDay, 'play_date' | 'word' | 'closes_at'> | null = gameDay ?? (isPreLaunch
+    ? { play_date: today, word: nextWord!.word, closes_at: '' }
     : null)
   const beforeLaunch = today < LAUNCH_DATE
 

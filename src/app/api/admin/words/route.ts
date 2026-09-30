@@ -25,7 +25,10 @@ export async function GET() {
   return NextResponse.json({ words: data ?? [] })
 }
 
-// POST — bulk add words, auto-assigning consecutive dates
+// POST — bulk add words to the end of the queue.
+// NOTE: play_date is only a SORT KEY, not a promise of when the word runs.
+// Game days consume the first word in the queue (see lib/launch.ts), so
+// days that don't launch never skip a word.
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin()
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,9 +36,7 @@ export async function POST(request: NextRequest) {
   const { words, dates } = await request.json()
   if (!words?.length) return NextResponse.json({ error: 'No words provided' }, { status: 400 })
 
-  // Find the next available date: the day after the last queued word,
-  // but never earlier than today (if today is still open — no word queued
-  // and no game launched yet) or tomorrow otherwise.
+  // Assign consecutive dates purely to preserve insertion order.
   const todayStr = dateCT(0)
   const [{ data: lastEntry }, { data: todayGame }] = await Promise.all([
     admin.from('word_queue').select('play_date')

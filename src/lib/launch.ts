@@ -15,6 +15,59 @@ export interface LaunchResult {
   results?: { slot: string; status: string; phone?: string }[]
 }
 
+type AdminClient = Awaited<ReturnType<typeof createAdminClient>>
+
+/**
+ * The word queue is an ordered list, not a calendar: each launched game day
+ * consumes the FIRST word in the queue (play_date is only a sort key).
+ * Days that don't launch don't consume a word — nothing is ever skipped.
+ */
+export async function peekNextWord(admin: AdminClient): Promise<{ id: string; word: string } | null> {
+  const { data } = await admin
+    .from('word_queue')
+    .select('id, word')
+    .order('play_date', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  return data ?? null
+}
+
+/**
+ * Whether today's cron should launch: manually scheduled dates ALWAYS
+ * launch; otherwise auto-launch settings (toggle + day-of-week) decide.
+ */
+export async function willLaunchToday(admin: AdminClient): Promise<{ launch: boolean; reason?: string }> {
+  const { data: scheduledToday } = await admin
+    .from('chain_starters_queue')
+    .select('id')
+    .eq('play_date', todayCT())
+    .limit(1)
+  if ((scheduledToday?.length ?? 0) > 0) return { launch: true }
+
+  const { data: settingsRows } = await admin
+    .from('settings')
+    .select('key, value')
+    .in('key', ['auto_launch_enabled', 'auto_launch_days'])
+  const settings: Record<string, string> = {}
+  for (const row of settingsRows ?? []) settings[row.key] = row.value
+
+  if (settings.auto_launch_enabled !== 'true') {
+    return { launch: false, reason: 'No manual schedule for today and auto-launch is OFF' }
+  }
+
+  // Day-of-week check in Central Time (0 = Sunday … 6 = Saturday)
+  // Default: all days enabled if the setting has never been saved.
+  const enabledDays = (settings.auto_launch_days ?? '0,1,2,3,4,5,6')
+    .split(',').filter(Boolean).map(Number)
+  const dayNameCT = new Date().toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Chicago' })
+  const dayIndexCT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(dayNameCT)
+
+  if (!enabledDays.includes(dayIndexCT)) {
+    return { launch: false, reason: `No manual schedule for today and auto-launch not enabled for ${dayNameCT}` }
+  }
+  return { launch: true }
+}
+
 export async function launchTodaysChains(): Promise<LaunchResult> {
   const admin = await createAdminClient()
   const today = todayCT()
@@ -29,11 +82,10 @@ export async function launchTodaysChains(): Promise<LaunchResult> {
     if (existing) {
       gameDay = existing
     } else {
-      const { data: wq } = await admin
-        .from('word_queue').select('word').eq('play_date', today).maybeSingle()
-
+      // Take the next word in the queue (ordered list — see peekNextWord)
+      const wq = await peekNextWord(admin)
       if (!wq) {
-        return { success: false, error: 'No word scheduled for today — add one in the Words tab first' }
+        return { success: false, error: 'The word queue is empty — add words in the Words tab first' }
       }
 
       // Chains lock at 11:59 PM Central Time
@@ -45,6 +97,9 @@ export async function launchTodaysChains(): Promise<LaunchResult> {
 
       if (error) return { success: false, error: error.message }
       gameDay = created
+
+      // Word is consumed — remove it from the queue
+      await admin.from('word_queue').delete().eq('id', wq.id)
     }
   }
 

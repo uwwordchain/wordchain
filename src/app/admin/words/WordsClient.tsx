@@ -39,11 +39,14 @@ export function WordsClient({
     } catch { /* ignore */ }
   }, [])
 
-  const todayEntry = words.find(w => w.play_date === today) ?? null
-  // Once a game is live, game_days is authoritative; the queue entry is the plan
-  const todayWord = launchedWord ?? todayEntry?.word ?? null
+  // The queue is an ordered list — each game day consumes the first word.
+  // Once a game is live its word has been removed from the queue, so the
+  // pinned card shows the launched word; otherwise it previews the head
+  // of the queue (which the next game day will use). The table always
+  // lists the full queue so every word can be edited or removed.
   const isLive = launchedWord !== null
-  const upcoming = words.filter(w => w.play_date > today)
+  const todayWord = launchedWord ?? words[0]?.word ?? null
+  const upcoming = words
 
   const handleBulkAdd = async () => {
     if (!bulkInput.trim()) return
@@ -104,7 +107,7 @@ export function WordsClient({
         {/* Today's word — pinned */}
         <div style={{ border: '1.5px solid var(--black)', padding: 'var(--space-3)', background: '#fafafa' }}>
           <p style={{ ...eyebrow, marginBottom: 'var(--space-1)' }}>
-            Today — {formatDateShort(today)}{isLive ? ' · Live now' : todayWord ? ' · Scheduled' : ''}
+            {isLive ? `Today — ${formatDateShort(today)} · Live now` : 'Next up · used on the next game day'}
           </p>
           {todayWord ? (
             <>
@@ -124,7 +127,7 @@ export function WordsClient({
             </>
           ) : (
             <p style={{ fontSize: 'var(--text-xs)', color: '#b44' }}>
-              No word scheduled for today. Add words below.
+              The queue is empty — game days can&apos;t launch without a word. Add words below.
             </p>
           )}
         </div>
@@ -178,9 +181,9 @@ export function WordsClient({
         {/* Upcoming queue */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-            <p style={eyebrow}>Upcoming queue</p>
+            <p style={eyebrow}>Up next</p>
             <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--light)' }}>
-              {upcoming.length} word{upcoming.length !== 1 ? 's' : ''} scheduled
+              {upcoming.length} word{upcoming.length !== 1 ? 's' : ''} queued
             </span>
           </div>
 
@@ -192,7 +195,7 @@ export function WordsClient({
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  <th style={th}>Date</th>
+                  <th style={th}>#</th>
                   <th style={th}>Word</th>
                   <th style={th}>Starts with</th>
                   <th style={th}></th>
@@ -204,7 +207,7 @@ export function WordsClient({
                   const isNext = idx === 0
                   return (
                     <tr key={entry.id} style={{ background: isNext ? '#f7f7f7' : 'transparent' }}>
-                      <td style={{ ...td, fontWeight: isNext ? 700 : 400 }}>{formatDateShort(entry.play_date)}</td>
+                      <td style={{ ...td, fontWeight: isNext ? 700 : 400, color: 'var(--light)' }}>{idx + 1}</td>
                       <td style={{ ...td, fontWeight: isNext ? 700 : 400 }}>
                         {editId === entry.id ? (
                           <input
@@ -249,7 +252,9 @@ export function WordsClient({
           )}
 
           <p style={{ fontSize: 'var(--text-2xs)', color: 'var(--light)', marginTop: 'var(--space-2)' }}>
-            Words auto-publish at midnight CT. Edit or remove any time before then.
+            Words are used in order, one per game day. Days without a game
+            don&apos;t use a word — the queue just waits. Edit or remove any
+            time before a word goes live.
           </p>
         </div>
       </div>
