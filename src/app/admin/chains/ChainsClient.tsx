@@ -408,7 +408,7 @@ export function ChainsClient({
                         /* Empty — searchable picker */
                         <div>
                           <UserPicker users={users} onPick={id => setEditSlots(p => ({ ...p, [slot]: id }))} />
-                          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--mid)', marginTop: 2 }}>Leave blank → random</div>
+                          <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--mid)', marginTop: 2 }}>Leave blank <span className="arrow">→</span> random</div>
                         </div>
                       )}
                     </div>
@@ -497,7 +497,7 @@ export function ChainsClient({
             </p>
             <button onClick={launchNow} disabled={launching}
               style={{ fontFamily: 'Space Mono, monospace', fontSize: 'var(--text-xs)', fontWeight: 700, padding: 'var(--space-2) var(--space-4)', background: 'var(--black)', color: 'var(--white)', border: 'none', cursor: 'pointer', opacity: launching ? 0.5 : 1 }}>
-              {launching ? 'Launching…' : 'Launch today\'s chains now →'}
+              {launching ? 'Launching…' : <>Launch today&apos;s chains now <span className="arrow">→</span></>}
             </button>
             <p style={{ fontSize: 'var(--text-2xs)', color: 'var(--light)', marginTop: 'var(--space-2)' }}>
               Sends the starter texts using today's word and the queue above.
@@ -599,7 +599,7 @@ export function ChainsClient({
                   opacity: congratsSending ? 0.5 : 1,
                 }}
               >
-                {congratsSending ? 'Sending…' : congratsSent ? 'Congrats sent ✓' : 'Send congrats text to winning team →'}
+                {congratsSending ? 'Sending…' : congratsSent ? 'Congrats sent ✓' : <>Send congrats text to winning team <span className="arrow">→</span></>}
               </button>
               <p style={{ fontSize: 'var(--text-2xs)', color: 'var(--light)', marginTop: 'var(--space-2)' }}>
                 Texts everyone on the winning chain who has a phone number on file.

@@ -238,7 +238,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
             </p>
             <div className="share-url" style={{ marginBottom: 'var(--space-2)' }}>{shareUrl}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <Button onClick={handleNativeSMS}>Send via text →</Button>
+              <Button onClick={handleNativeSMS}>Send via text <span className="arrow">→</span></Button>
               <Button variant="ghost" onClick={handleCopy}>
                 {copied ? '✓ Copied!' : 'Copy link'}
               </Button>
@@ -267,7 +267,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
                           border: 'none', cursor: 'pointer',
                         }}
                       >
-                        Text →
+                        Text <span className="arrow">→</span>
                       </button>
                     </div>
                   ))}
@@ -277,7 +277,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
           </div>
 
           <a href="/home" style={{ textAlign: 'center', fontSize: 'var(--text-base)', color: 'var(--mid)', textDecoration: 'underline' }}>
-            ← Back to home
+            <span className="arrow arrow--flip">→</span> Back to home
           </a>
         </div>
 
@@ -324,7 +324,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
           <LetterTileInline />
 
           <a href={signupUrl} className="btn-primary" style={{ marginBottom: 'var(--space-2)' }}>
-            Join now to play →
+            Join now to play <span className="arrow">→</span>
           </a>
           <p style={{ textAlign: 'center', fontSize: 'var(--text-base)', color: 'var(--mid)' }}>
             Already a member?{' '}
@@ -385,7 +385,7 @@ export default function PlayScreen({ chainContext, currentUser, isAdmin = false,
           disabled={isSubmitting || !wordInput || wordInput.length < 2}
           style={{ marginTop: 'var(--space-2)' }}
         >
-          {isSubmitting ? 'Checking word...' : 'Submit →'}
+          {isSubmitting ? 'Checking word...' : <>Submit <span className="arrow">→</span></>}
         </Button>
       </div>
 

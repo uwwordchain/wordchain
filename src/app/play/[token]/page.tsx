@@ -63,7 +63,7 @@ export default async function PlayPage({ params }: PlayPageProps) {
           Each invite link can only be used once. Ask the person who invited you for a new link, or head home.
         </p>
         <a href="/home" style={{ fontSize: 11, color: '#000', fontWeight: 700, textDecoration: 'underline' }}>
-          ← Back to home
+          <span className="arrow arrow--flip">→</span> Back to home
         </a>
       </div>
     )
@@ -86,7 +86,7 @@ export default async function PlayPage({ params }: PlayPageProps) {
           Chains lock at 11:59 PM CT and reset each day. Head home to see today&apos;s word and yesterday&apos;s winner.
         </p>
         <a href="/home" style={{ fontSize: 11, color: '#000', fontWeight: 700, textDecoration: 'underline' }}>
-          ← Back to home
+          <span className="arrow arrow--flip">→</span> Back to home
         </a>
       </div>
     )

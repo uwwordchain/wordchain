@@ -185,7 +185,7 @@ function SignupForm() {
           )}
 
           <Button type="submit" disabled={loading} style={{ marginTop: 8 }}>
-            {loading ? 'Creating account...' : 'Create account →'}
+            {loading ? 'Creating account...' : <>Create account <span className="arrow">→</span></>}
           </Button>
 
           <p className="hint" style={{ textAlign: 'center' }}>

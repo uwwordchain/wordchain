@@ -36,7 +36,7 @@ export function Topbar({
 
       <div className="topbar">
         {backHref && (
-          <a href={backHref} className="topbar__back">←</a>
+          <a href={backHref} className="topbar__back"><span className="arrow arrow--flip">→</span></a>
         )}
 
         {title ? (

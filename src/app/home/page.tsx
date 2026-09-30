@@ -185,7 +185,7 @@ export default async function HomePage() {
       {/* CTA */}
       <div style={{ padding: 'var(--space-3) var(--space-4) 0' }}>
         {!user ? (
-          <a href="/signup" className="btn-primary">Sign up to be selected →</a>
+          <a href="/signup" className="btn-primary">Sign up to be selected <span className="arrow">→</span></a>
         ) : hasPlayedToday ? (
           <div style={{
             padding: 'var(--space-3) var(--space-4)',

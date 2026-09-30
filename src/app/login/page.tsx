@@ -111,7 +111,7 @@ function ForgotPin({ onCancel }: { onCancel: () => void }) {
         />
         {error && <div className="error-box">{error}</div>}
         <Button type="submit" disabled={loading || !email}>
-          {loading ? 'Sending…' : 'Send reset link →'}
+          {loading ? 'Sending…' : <>Send reset link <span className="arrow">→</span></>}
         </Button>
         <button
           type="button"
@@ -199,7 +199,7 @@ function LoginForm() {
           {serverError && <div className="error-box">{serverError}</div>}
 
           <Button type="submit" disabled={loading} style={{ marginTop: 'var(--space-2)' }}>
-            {loading ? 'Logging in…' : 'Log in →'}
+            {loading ? 'Logging in…' : <>Log in <span className="arrow">→</span></>}
           </Button>
         </form>
 

@@ -167,7 +167,7 @@ export function WordsClient({
               opacity: bulkInput.trim() ? 1 : 0.4,
             }}
           >
-            {loading ? 'Adding…' : 'Add to queue →'}
+            {loading ? 'Adding…' : <>Add to queue <span className="arrow">→</span></>}
           </button>
           {message && (
             <p style={{ fontSize: 'var(--text-xs)', color: message.startsWith('✓') ? 'green' : '#b44', marginTop: 'var(--space-2)' }}>

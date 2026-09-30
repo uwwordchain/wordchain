@@ -122,6 +122,17 @@ body {
 }
 
 /* ── Typography ───────────────────────────────────────────────────────────── */
+/* Space Mono's arrow glyphs sit low next to uppercase text, and its ← is
+   not a true mirror of → (different size/position). Always use the → glyph
+   (flipped for left) wrapped in .arrow, nudged up to optical center. */
+.arrow {
+  display: inline-block;
+  transform: translateY(-0.06em);
+}
+.arrow--flip {
+  transform: translateY(-0.06em) scaleX(-1);
+}
+
 /* Inline links (inside running text) must look like links. Tailwind's
    preflight strips underline/color from all anchors, so restore them for
    anchors nested in text containers. Nav/button/card anchors (direct

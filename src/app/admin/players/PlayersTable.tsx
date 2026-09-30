@@ -179,13 +179,11 @@ export function PlayersTable({ initialRows }: { initialRows: PlayerRow[] }) {
                 <th style={th}>Phone</th>
                 <th style={th}>Joined</th>
                 <th style={th}>Chains</th>
-                {/* Space Mono's ← glyph isn't a mirror of → (different size
-                    and vertical position), so use → for both and flip one. */}
                 <th style={th} title="Players this user has sent a chain invite to">
-                  <span style={{ display: 'inline-block' }}>→</span> Sent To
+                  <span className="arrow">→</span> Sent To
                 </th>
                 <th style={th} title="Players who have sent a chain invite to this user">
-                  <span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>→</span> Received From
+                  <span className="arrow arrow--flip">→</span> Received From
                 </th>
                 <th style={th}>Admin</th>
                 <th style={th}></th>
