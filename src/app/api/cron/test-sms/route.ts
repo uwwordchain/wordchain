@@ -1,8 +1,9 @@
 /**
  * GET /api/cron/test-sms
  *
- * Same guard as launch-chains (CRON_SECRET Bearer). Sends ONE starter-style
- * text to TEST_SMS_PHONE — no game day, chains, or queue changes.
+ * Same guard as launch-chains (CRON_SECRET Bearer). Disabled unless
+ * TEST_SMS_ENABLED=true. Sends ONE starter-style text to TEST_SMS_PHONE — no
+ * game day, chains, or queue changes.
  *
  * Not added to vercel.json (Hobby plan allows only 2 crons). Trigger manually
  * or schedule locally, e.g.:
@@ -17,6 +18,10 @@ export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (process.env.TEST_SMS_ENABLED !== 'true') {
+    return NextResponse.json({ error: 'Test SMS drill is disabled' }, { status: 403 })
   }
 
   const to = process.env.TEST_SMS_PHONE?.trim()

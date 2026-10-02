@@ -63,8 +63,8 @@ src/components/     ui/ (shared), player/, admin/
 | `RESEND_API_KEY` | Email |
 | `NEXT_PUBLIC_APP_URL` | Absolute links in texts/emails |
 | `CRON_SECRET` | Authorizes Vercel cron calls |
-| `TEST_SMS_PHONE` | Optional; `/api/cron/test-sms` sends a drill starter-style text here (no launch) |
-| `TEST_SMS_PHONE` | Optional; `/api/cron/test-sms` sends a drill starter-style text here (no launch) |
+| `TEST_SMS_PHONE` | Optional; target for `/api/cron/test-sms` drill (no launch) |
+| `TEST_SMS_ENABLED` | Must be `true` to allow test-sms; omit or false in production normally |
 
 For local dev, copy these into `.env.local` (gitignored) and `npm run dev`.
 
