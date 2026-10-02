@@ -27,6 +27,20 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  const twilioOk =
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_PHONE_NUMBER
+  if (!twilioOk) {
+    return NextResponse.json(
+      {
+        error:
+          'Twilio env missing on this deployment — add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to Production, then redeploy.',
+      },
+      { status: 500 },
+    )
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://uwwordchain.app'
   // Same copy shape as src/lib/launch.ts starter SMS (slot/word/link are fake).
   const body =

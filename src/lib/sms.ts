@@ -24,6 +24,12 @@ export async function sendSMS(to: string, body: string): Promise<void> {
   const from = process.env.TWILIO_PHONE_NUMBER
 
   if (!sid || !token || !from) {
+    // Never pretend success in production — launch cron would "succeed" with no texts.
+    if (process.env.VERCEL) {
+      throw new Error(
+        'Twilio not configured: set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in Vercel',
+      )
+    }
     console.log(`[SMS STUB — Twilio not configured] To: ${to}\nBody: ${body}`)
     return
   }
